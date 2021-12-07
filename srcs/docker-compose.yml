@@ -1,0 +1,146 @@
+version: "3.9"
+
+services:
+  nginx:
+    container_name: nginx
+    image: nginx
+    build: ./requirements/nginx
+    depends_on:
+      wordpress:
+        condition: service_started
+      adminer:
+        condition: service_started
+      cv:
+        condition: service_started
+    volumes:
+      - wordpress:/var/www/html
+    networks:
+      - my-network
+    ports:
+      - "443:443"
+    env_file:
+      - .env
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+
+  mariadb:
+    container_name: mariadb
+    image: mariadb
+    build: ./requirements/mariadb
+    volumes:
+      - wordpress_db:/var/lib/mysql
+    networks:
+      - my-network
+    ports:
+      - "3306:3306"
+    env_file:
+      - .env
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+    healthcheck:
+      test: "mysql --user=root --password=${MDB_ROOT_PASS} --execute \"SHOW DATABASES;\" \
+      | grep \"wordpress_db\" || \"wordpress_db\""
+      interval: 5s
+      retries: 5
+      timeout: 3s
+      start_period: 10s
+
+  wordpress:
+    container_name: wordpress
+    image: wordpress
+    build: ./requirements/wordpress
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    volumes:
+      - wordpress:/var/www/html
+    networks:
+      - my-network
+    ports:
+      - "9000:9000"
+    env_file:
+      - .env
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+
+  ftp:
+    container_name: ftp
+    image: ftp
+    build: ./requirements/bonus/ftp
+    volumes:
+      - wordpress:/home/epilar/ftp/files
+    networks:
+      - my-network
+    ports:
+      - "21:21"
+      - "10015:10015"
+    env_file:
+      - .env
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+    depends_on:
+      wordpress:
+        condition: service_started
+
+  adminer:
+    container_name: adminer
+    image: adminer
+    build: ./requirements/bonus/adminer
+    networks:
+      - my-network
+    ports:
+     - "9001:9001"
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+    depends_on:
+      wordpress:
+        condition: service_started
+
+  cv:
+    container_name: cv
+    image: cv
+    build: ./requirements/bonus/cv
+    networks:
+      - my-network
+    ports:
+     - "8080:8080"
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+    depends_on:
+      wordpress:
+        condition: service_started
+      
+
+networks:
+  my-network:
+    driver: bridge
+    name: my-network
+
+volumes:
+  wordpress:
+    name: wordpress
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/${USER}/data/wordpress
+  
+  wordpress_db:
+    name: wordpress_db
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/${USER}/data/wordpress_db

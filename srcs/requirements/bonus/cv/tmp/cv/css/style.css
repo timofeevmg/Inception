@@ -1,0 +1,57 @@
+.italic {
+	font-style: italic;
+}
+
+.center {
+	text-align: center;
+}
+
+h1 {
+	margin-bottom: -20px;
+}
+
+h2 {
+	margin-left: 150px;
+	margin-bottom: 0;
+}
+
+h3 {
+	margin-bottom: 0;
+}
+
+hr {
+	margin-left: 150px;
+	margin-right: 150px;
+	margin-bottom: 15px;
+	margin-top: 0;
+}
+
+p {
+	margin-left: 150px;
+	margin-right: 150px;
+	margin-bottom: 0;
+}
+
+li {
+	margin-left: 180px;
+	margin-bottom: 0;
+	margin-top: 3px;
+}
+
+.item {
+	margin-bottom: -15px;
+	font-weight: bold;
+}
+
+.bottom__fio {
+	text-align: center;
+	font-weight: bold;
+	margin-bottom: -15px;
+	margin-top: 70px;
+}
+
+img {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
